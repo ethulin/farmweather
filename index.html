@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>¿Es seguro quemar?</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow-x:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;min-height:100dvh;
+  transition:background 0.6s ease;
+  padding:24px 16px;
+  text-align:center;
+  color:#fff;
+}
+
+/* Status backgrounds */
+body.green{background:linear-gradient(170deg,#15712a 0%,#1e9e38 40%,#22b740 70%,#1a8c2e 100%)}
+body.yellow{background:linear-gradient(170deg,#a87400 0%,#d49500 40%,#e6a800 70%,#b88000 100%)}
+body.red{background:linear-gradient(170deg,#8b1515 0%,#c62828 40%,#d93030 70%,#a01c1c 100%)}
+body.loading{background:#455a64}
+
+/* CSS Icons */
+.icon-wrap{
+  width:min(28vw,120px);height:min(28vw,120px);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 8px 32px rgba(0,0,0,0.15);
+}
+.icon-inner{
+  font-size:min(14vw,60px);
+  line-height:1;
+  font-weight:700;
+  text-shadow:0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Main status word */
+.status-word{
+  font-size:min(11vw,64px);
+  font-weight:900;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  text-shadow:0 3px 12px rgba(0,0,0,0.3);
+  margin-bottom:12px;
+  padding:0 8px;
+  word-spacing:4px;
+}
+
+/* Subtitle */
+.subtitle{
+  font-size:min(4.8vw,20px);
+  font-weight:400;
+  opacity:0.9;
+  max-width:300px;
+  line-height:1.5;
+  margin:0 auto 36px;
+  padding:0 12px;
+  text-align:center;
+}
+
+/* Result entrance animation */
+#result{animation:fadeUp 0.4s ease-out}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Refresh button */
+.refresh-btn{
+  background:rgba(255,255,255,0.22);
+  border:2px solid rgba(255,255,255,0.6);
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  padding:16px 48px;
+  border-radius:50px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  min-height:56px;
+  transition:background 0.2s,transform 0.1s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.12);
+}
+.refresh-btn:active{
+  background:rgba(255,255,255,0.35);
+  transform:scale(0.97);
+}
+
+/* Details section */
+.details-toggle{
+  margin-top:40px;
+  color:rgba(255,255,255,0.4);
+  font-size:13px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  padding:10px 16px;
+}
+.details-panel{
+  display:none;
+  margin-top:12px;
+  background:rgba(0,0,0,0.18);
+  border-radius:14px;
+  padding:16px 20px;
+  width:100%;
+  max-width:320px;
+  text-align:left;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+.details-panel.open{display:block}
+
+.detail-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  font-size:14px;
+  color:rgba(255,255,255,0.85);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-weight:400;opacity:0.65}
+.detail-value{font-weight:600;display:flex;align-items:center;gap:8px}
+.dot{
+  width:12px;height:12px;border-radius:50%;display:inline-block;flex-shrink:0;
+  border:2px solid rgba(255,255,255,0.4);
+}
+.dot.g{background:#43a047}.dot.y{background:#f9a825}.dot.r{background:#e53935}
+
+.timestamp{
+  margin-top:10px;
+  font-size:11px;
+  color:rgba(255,255,255,0.3);
+  text-align:center;
+}
+
+/* Loading spinner */
+.spinner{
+  width:48px;height:48px;
+  border:4px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  margin-bottom:16px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Error state */
+.error-msg{
+  font-size:16px;
+  opacity:0.9;
+  margin-bottom:24px;
+  max-width:280px;
+  line-height:1.4;
+}
+</style>
+</head>
+<body class="loading">
+
+<div id="main">
+  <div class="spinner" id="spinner"></div>
+  <div class="status-word" id="loading-text">Cargando...</div>
+</div>
+
+<div id="result" style="display:none;width:100%;text-align:center">
+  <div class="icon-wrap"><span class="icon-inner" id="icon"></span></div>
+  <div class="status-word" id="word"></div>
+  <div class="subtitle" id="subtitle"></div>
+  <button class="refresh-btn" onclick="load()" id="refreshBtn">Actualizar</button>
+  <div class="details-toggle" id="dtoggle" onclick="toggleDetails()">Detalles ▾</div>
+  <div class="details-panel" id="dpanel">
+    <div class="detail-row">
+      <span class="detail-label">Humedad</span>
+      <span class="detail-value"><span class="dot" id="dh"></span><span id="vh"></span></span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Viento</span>
+      <span class="detail-value"><span class="dot" id="dw"></span><span id="vw"></span></span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Temperatura</span>
+      <span class="detail-value"><span class="dot" id="dt"></span><span id="vt"></span></span>
+    </div>
+    <div class="timestamp" id="ts"></div>
+  </div>
+</div>
+
+<div id="error" style="display:none;width:100%">
+  <div class="icon-wrap"><span class="icon-inner">!</span></div>
+  <div class="error-msg">No se pudo obtener el clima. Verifique su conexión.</div>
+  <button class="refresh-btn" onclick="load()">Reintentar</button>
+</div>
+
+<img src="bmft_logo.png" alt="Belize Maya Forest Trust" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:150px;opacity:0.5;pointer-events:none;">
+
+<script>
+var API='https://api.open-meteo.com/v1/forecast?latitude=16.725&longitude=-88.840&current=temperature_2m,relative_humidity_2m,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph';
+
+function score(h,w,t){
+  var sh=h>40?0:(h>=30?1:2);
+  var sw=w<5?0:(w<=10?1:2);
+  var st=t<80?0:(t<=90?1:2);
+  return{humidity:sh,wind:sw,temp:st,overall:Math.max(sh,sw,st)};
+}
+
+var states=[
+  {cls:'green',icon:'✓',word:'SEGURO',sub:'Puede quemar. Siga el plan de quema.'},
+  {cls:'yellow',icon:'!',word:'PRECAUCIÓN',sub:'Tenga cuidado y contacte a<br><a href="tel:+5016748055" style="color:#fff;text-decoration:underline">Lyndon Mai: +501 674 8055</a>'},
+  {cls:'red',icon:'✕',word:'NO QUEMAR',sub:'Condiciones peligrosas. No queme hoy.'}
+];
+var dotCls=['g','y','r'];
+
+function toggleDetails(){
+  var p=document.getElementById('dpanel');
+  var t=document.getElementById('dtoggle');
+  if(p.classList.contains('open')){p.classList.remove('open');t.textContent='Detalles ▾';}
+  else{p.classList.add('open');t.textContent='Detalles ▴';}
+}
+
+function show(id){
+  ['main','result','error'].forEach(function(s){document.getElementById(s).style.display=s===id?'':'none';});
+}
+
+function load(){
+  show('main');
+  document.body.className='loading';
+
+  fetch(API).then(function(r){return r.json();}).then(function(d){
+    var c=d.current;
+    var h=c.relative_humidity_2m;
+    var w=c.wind_speed_10m;
+    var t=c.temperature_2m;
+    var s=score(h,w,t);
+    var st=states[s.overall];
+
+    document.body.className=st.cls;
+    document.getElementById('icon').textContent=st.icon;
+    document.getElementById('word').textContent=st.word;
+    document.getElementById('subtitle').innerHTML=st.sub;
+
+    document.getElementById('dh').className='dot '+dotCls[s.humidity];
+    document.getElementById('vh').textContent=h+'%';
+    document.getElementById('dw').className='dot '+dotCls[s.wind];
+    document.getElementById('vw').textContent=w+' mph';
+    document.getElementById('dt').className='dot '+dotCls[s.temp];
+    document.getElementById('vt').textContent=Math.round(t)+'°F';
+
+    var time=new Date(c.time);
+    document.getElementById('ts').textContent='Datos: '+time.toLocaleString('es',{hour:'numeric',minute:'2-digit',hour12:true,day:'numeric',month:'short'});
+
+    document.getElementById('dpanel').classList.remove('open');
+    document.getElementById('dtoggle').textContent='Detalles ▾';
+    show('result');
+  }).catch(function(){
+    document.body.className='red';
+    show('error');
+  });
+}
+
+load();
+</script>
+</body>
+</html>
