@@ -332,6 +332,11 @@ def generate_html(analysis):
             heatmap_rows_html += f'<div class="hm-cell" style="background:{c}">{v:.0f}</div>'
 
     generated = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+    year_span = int(END_DATE[:4]) - int(START_DATE[:4]) + 1
+
+    # Driver percentages for inline text
+    d_total = drivers["total"]
+    d_pcts = {k: round(v / d_total * 100, 1) if d_total else 0 for k, v in d.items()}
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -340,211 +345,224 @@ def generate_html(analysis):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Historical Burn Conditions Report — Belize</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
 
 body {{
     font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #F5F5F3;
+    background: #fff;
     color: #333;
-    line-height: 1.7;
+    line-height: 1.75;
     -webkit-font-smoothing: antialiased;
+    font-size: 18px;
 }}
 
-/* ── Header ── */
-.report-header {{
-    background: #fff;
-    padding: 40px 48px 36px;
-    max-width: 1100px;
+a {{ color: #0067B1; }}
+
+/* ── Page wrapper ── */
+.page {{
+    max-width: 880px;
     margin: 0 auto;
+    padding: 0 40px;
+}}
+.page-wide {{
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 40px;
+}}
+
+/* ── Cover ── */
+.cover {{
+    padding: 80px 0 60px;
+    border-bottom: 1px solid #ddd;
     position: relative;
 }}
-.header-logo {{
+.cover-logo {{
     position: absolute;
-    top: 40px;
-    right: 48px;
+    top: 80px;
+    right: 0;
 }}
-.header-logo img {{
-    height: 60px;
+.cover-logo img {{
+    height: 56px;
     width: auto;
 }}
-.report-header h1 {{
-    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
-    font-size: 2.8rem;
+.cover h1 {{
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 3rem;
     font-weight: 900;
     color: #0067B1;
-    line-height: 1.15;
-    margin-bottom: 12px;
-    max-width: 75%;
-}}
-.report-header .subtitle {{
-    font-size: 1.15rem;
-    font-weight: 300;
-    color: #666;
-    line-height: 1.5;
+    line-height: 1.1;
+    margin-bottom: 16px;
     max-width: 70%;
 }}
-.header-accent {{
-    width: 80px;
-    height: 4px;
+.cover .lead {{
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: #555;
+    line-height: 1.6;
+    max-width: 65%;
+    margin-bottom: 28px;
+}}
+.cover .accent {{
+    width: 60px;
+    height: 3px;
     background: #D4982A;
+}}
+.cover .meta {{
     margin-top: 20px;
-    border-radius: 2px;
-}}
-.header-meta {{
-    margin-top: 16px;
-    font-size: 0.85rem;
-    color: #999;
-    font-weight: 400;
+    font-size: 0.82rem;
+    color: #aaa;
 }}
 
-/* ── Container ── */
-.container {{
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0;
+/* ── Section headings (Rare interior style: ALL-CAPS sans-serif) ── */
+.sec {{
+    padding: 72px 0 0;
 }}
-
-/* ── Section ── */
-.section {{
-    background: #fff;
-    padding: 56px 48px;
-    margin-top: 2px;
-}}
-.section h2 {{
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: #0067B1;
-    margin-bottom: 4px;
+.sec-head {{
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #222;
+    margin-bottom: 12px;
     line-height: 1.2;
 }}
-.section-sub {{
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #999;
-    margin-bottom: 8px;
-}}
-.section-rule {{
+.sec-rule {{
     width: 100%;
     height: 1px;
-    background: #e0e0e0;
-    margin: 12px 0 28px;
+    background: #ddd;
+    margin-bottom: 28px;
 }}
-.section-desc {{
-    font-size: 1rem;
-    color: #555;
-    margin-bottom: 32px;
-    line-height: 1.7;
-    max-width: 800px;
+.sec p {{
+    color: #444;
+    margin-bottom: 20px;
+    max-width: 720px;
 }}
+.sec p strong {{ color: #222; }}
 
-/* ── Executive Summary Stats ── */
-.summary-grid {{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-bottom: 32px;
+/* ── Figures (charts) ── */
+figure {{
+    margin: 32px 0 16px;
 }}
-.stat-card {{
-    text-align: center;
-    padding: 32px 16px;
-    border-radius: 8px;
-    color: #fff;
+figure figcaption {{
+    font-size: 0.82rem;
+    color: #999;
+    margin-top: 8px;
+    font-style: italic;
 }}
-.stat-card.green {{ background: {COLORS["green"]}; }}
-.stat-card.yellow {{ background: {COLORS["yellow"]}; }}
-.stat-card.red {{ background: {COLORS["red"]}; }}
-.stat-card .pct {{
-    font-family: 'Playfair Display', serif;
-    font-size: 3.2rem;
-    font-weight: 900;
-    line-height: 1;
-    margin-bottom: 6px;
-}}
-.stat-card .label {{
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    opacity: 0.9;
-}}
-.stat-card .count {{
-    font-size: 0.8rem;
-    opacity: 0.75;
-    margin-top: 4px;
-}}
-
-/* ── Key Finding (gold callout) ── */
-.callout {{
-    background: #D4982A;
-    color: #fff;
-    padding: 24px 28px;
-    border-radius: 6px;
-    font-size: 1rem;
-    line-height: 1.7;
-}}
-.callout strong {{
-    display: block;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-    opacity: 0.85;
-}}
-.callout em {{ font-style: normal; font-weight: 700; }}
-
-/* ── Charts ── */
 .chart-container {{
     position: relative;
     width: 100%;
-    max-height: 400px;
+    max-height: 380px;
 }}
 .chart-container canvas {{
-    max-height: 400px;
+    max-height: 380px;
+}}
+
+/* ── Stat row (replaces colored cards) ── */
+.stat-row {{
+    display: flex;
+    gap: 48px;
+    margin: 40px 0;
+    padding: 40px 0 36px;
+}}
+.stat-item {{
+    flex: 1;
+}}
+.stat-num {{
+    font-family: 'Playfair Display', serif;
+    font-size: 3.4rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #222;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}}
+.stat-num .dot {{
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    top: -4px;
+}}
+.stat-label {{
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #888;
+    margin-top: 8px;
+}}
+.stat-sub {{
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-top: 2px;
+}}
+
+/* ── Pull-quote / callout ── */
+.pull-quote {{
+    border-left: 4px solid #D4982A;
+    padding: 20px 0 20px 28px;
+    margin: 36px 0;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #444;
+}}
+.pull-quote strong {{
+    color: #222;
+}}
+.pull-quote .pq-label {{
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #D4982A;
+    margin-bottom: 8px;
 }}
 
 /* ── Two-column layout ── */
 .two-col {{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 48px;
+    gap: 56px;
+    margin-top: 28px;
+}}
+
+/* ── Sub-headings within sections ── */
+.sub-head {{
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #666;
+    margin-bottom: 16px;
 }}
 
 /* ── Tables ── */
 .data-table {{
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
-    margin-top: 16px;
+    font-size: 0.88rem;
+    margin-top: 12px;
 }}
 .data-table thead th {{
     text-align: left;
-    padding: 12px 14px;
-    background: #009966;
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.78rem;
+    padding: 10px 12px;
+    border-bottom: 2px solid #0067B1;
+    font-weight: 700;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}}
-.data-table thead th:first-child {{
-    border-radius: 4px 0 0 0;
-}}
-.data-table thead th:last-child {{
-    border-radius: 0 4px 0 0;
+    color: #0067B1;
 }}
 .data-table td {{
-    padding: 11px 14px;
-    border-bottom: 1px solid #e8e8e8;
+    padding: 9px 12px;
+    border-bottom: 1px solid #eee;
     color: #444;
-}}
-.data-table tbody tr:nth-child(even) td {{
-    background: #f9f9f7;
 }}
 .data-table tbody tr:last-child td {{ border-bottom: none; }}
 
@@ -562,20 +580,19 @@ body {{
     display: grid;
     grid-template-columns: 52px repeat(24, 1fr);
     gap: 2px;
-    font-size: 0.7rem;
-    margin-top: 16px;
+    margin-top: 20px;
 }}
 .hm-cell {{
     aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 3px;
+    border-radius: 2px;
     font-weight: 600;
-    font-size: 0.62rem;
-    min-height: 28px;
+    font-size: 0.6rem;
+    min-height: 26px;
     color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }}
 .hm-label {{
     display: flex;
@@ -589,199 +606,170 @@ body {{
 .hm-hour {{
     text-align: center;
     font-weight: 600;
-    color: #999;
-    font-size: 0.68rem;
+    color: #aaa;
+    font-size: 0.65rem;
     padding-bottom: 4px;
-}}
-
-/* ── Insight pills ── */
-.insight {{
-    display: inline-block;
-    background: #EBF3FA;
-    border: 1px solid #C8DCF0;
-    border-radius: 4px;
-    padding: 8px 14px;
-    font-size: 0.88rem;
-    color: #0067B1;
-    margin: 4px 6px 4px 0;
-}}
-
-/* ── Section sub-headings ── */
-.section h3 {{
-    font-family: 'Source Sans 3', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #666;
-    margin-bottom: 16px;
 }}
 
 /* ── Footer ── */
 .report-footer {{
-    max-width: 1100px;
-    margin: 0 auto;
-    background: #fff;
-    margin-top: 2px;
-    padding: 36px 48px;
+    margin-top: 80px;
+    padding: 28px 0 60px;
+    border-top: 1px solid #ddd;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
 }}
 .footer-text {{
-    font-size: 0.82rem;
-    color: #999;
+    font-size: 0.78rem;
+    color: #bbb;
     line-height: 1.8;
 }}
 .footer-logo img {{
-    height: 40px;
+    height: 36px;
     width: auto;
-    opacity: 0.6;
+    opacity: 0.5;
 }}
 
 /* ── Responsive ── */
 @media (max-width: 768px) {{
-    .report-header {{ padding: 28px 20px 24px; }}
-    .report-header h1 {{ font-size: 1.8rem; max-width: 100%; }}
-    .report-header .subtitle {{ max-width: 100%; }}
-    .header-logo {{ position: static; margin-bottom: 20px; }}
-    .section {{ padding: 36px 20px; }}
-    .summary-grid {{ grid-template-columns: 1fr; }}
+    .page, .page-wide {{ padding: 0 20px; }}
+    .cover h1 {{ font-size: 2rem; max-width: 100%; }}
+    .cover .lead {{ max-width: 100%; }}
+    .cover-logo {{ position: static; margin-bottom: 24px; }}
+    .stat-row {{ flex-direction: column; gap: 24px; }}
     .two-col {{ grid-template-columns: 1fr; }}
     .hm-grid {{ overflow-x: auto; }}
-    .report-footer {{ flex-direction: column; gap: 16px; text-align: center; padding: 24px 20px; }}
 }}
 
 @media print {{
-    body {{ background: #fff; }}
-    .section {{ box-shadow: none; break-inside: avoid; }}
+    .sec {{ break-inside: avoid; }}
+    .page, .page-wide {{ max-width: 100%; }}
 }}
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="page">
 
-<!-- Header -->
-<div class="report-header">
-    <div class="header-logo"><img src="rare-logo.png" alt="Rare — Center for Behavior &amp; the Environment"></div>
-    <h1>Historical Burn Conditions Report</h1>
-    <div class="subtitle">Making the Case for Informed Burning Practices<br>in the Belize Maya Forest Region</div>
-    <div class="header-accent"></div>
-    <div class="header-meta">{LAT}°N, {abs(LON)}°W &nbsp;·&nbsp; {START_DATE[:4]}–{END_DATE[:4]} &nbsp;·&nbsp; {overall["total"]:,} hourly observations &nbsp;·&nbsp; Generated {generated}</div>
+<!-- Cover -->
+<div class="cover">
+    <div class="cover-logo"><img src="rare-logo.png" alt="Rare — Center for Behavior &amp; the Environment"></div>
+    <h1>Historical Burn<br>Conditions Report</h1>
+    <p class="lead">Making the Case for Informed Burning Practices in the Belize Maya Forest Region</p>
+    <div class="accent"></div>
+    <p class="meta">{LAT}°N, {abs(LON)}°W &nbsp;&middot;&nbsp; {START_DATE[:4]}–{END_DATE[:4]} &nbsp;&middot;&nbsp; {overall["total"]:,} hourly observations</p>
 </div>
 
 <!-- Executive Summary -->
-<div class="section">
-    <div class="section-sub">Overview</div>
-    <h2>Executive Summary</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">Overall distribution of burn safety conditions across {int(END_DATE[:4]) - int(START_DATE[:4]) + 1} years of hourly weather data at the Belize study site.</p>
-    <div class="summary-grid">
-        <div class="stat-card green">
-            <div class="pct">{overall["pcts"][0]}%</div>
-            <div class="label">Safe to Burn</div>
-            <div class="count">{overall["counts"][0]:,} hours</div>
+<div class="sec">
+    <h2 class="sec-head">Executive Summary</h2>
+    <div class="sec-rule"></div>
+
+    <p>This report analyzes {year_span} years of hourly weather data ({overall["total"]:,} observations) to characterize burn safety conditions at the Belize study site. Each hour is classified as <strong>safe</strong> (green), <strong>caution</strong> (yellow), or <strong>unsafe</strong> (red) based on humidity, wind speed, and temperature thresholds.</p>
+
+    <div class="stat-row">
+        <div class="stat-item">
+            <div class="stat-num"><span class="dot" style="background:{COLORS['green']}"></span>{overall["pcts"][0]}%</div>
+            <div class="stat-label">Safe to Burn</div>
+            <div class="stat-sub">{overall["counts"][0]:,} hours</div>
         </div>
-        <div class="stat-card yellow">
-            <div class="pct">{overall["pcts"][1]}%</div>
-            <div class="label">Use Caution</div>
-            <div class="count">{overall["counts"][1]:,} hours</div>
+        <div class="stat-item">
+            <div class="stat-num"><span class="dot" style="background:{COLORS['yellow']}"></span>{overall["pcts"][1]}%</div>
+            <div class="stat-label">Use Caution</div>
+            <div class="stat-sub">{overall["counts"][1]:,} hours</div>
         </div>
-        <div class="stat-card red">
-            <div class="pct">{overall["pcts"][2]}%</div>
-            <div class="label">Do Not Burn</div>
-            <div class="count">{overall["counts"][2]:,} hours</div>
+        <div class="stat-item">
+            <div class="stat-num"><span class="dot" style="background:{COLORS['red']}"></span>{overall["pcts"][2]}%</div>
+            <div class="stat-label">Do Not Burn</div>
+            <div class="stat-sub">{overall["counts"][2]:,} hours</div>
         </div>
     </div>
-    <div class="callout">
-        <strong>Key Finding</strong>
-        <em>{dominant.capitalize()}</em> is the primary driver of unsafe conditions,
-        responsible for triggering caution or danger in {d[dominant]:,} of {drivers["total"]:,} non-green hours.
-        The safest month is <em>{MONTH_NAMES[best_month[0]-1]}</em> ({best_month[1]}% green) and the riskiest is
-        <em>{MONTH_NAMES[worst_month[0]-1]}</em> ({worst_month[1]}% green).
-        Within a typical day, <em>{best_hour[0]}:00</em> is the safest hour ({best_hour[1]}% green)
-        and <em>{worst_hour[0]}:00</em> is the riskiest ({worst_hour[1]}% green).
+
+    <div class="pull-quote">
+        <span class="pq-label">Key Finding</span>
+        <strong>{dominant.capitalize()}</strong> is the primary driver of unsafe conditions, responsible for triggering caution or danger in {d[dominant]:,} of {drivers["total"]:,} non-green hours ({d_pcts[dominant]}%). The safest month is <strong>{MONTH_NAMES[best_month[0]-1]}</strong> ({best_month[1]}% green) and the riskiest is <strong>{MONTH_NAMES[worst_month[0]-1]}</strong> ({worst_month[1]}% green). Within a typical day, <strong>{best_hour[0]}:00</strong> is the safest hour ({best_hour[1]}% green) and <strong>{worst_hour[0]}:00</strong> the riskiest ({worst_hour[1]}% green).
     </div>
 </div>
 
+</div><!-- /page -->
+<div class="page-wide">
+
 <!-- Monthly Seasonality -->
-<div class="section">
-    <div class="section-sub">Seasonality</div>
-    <h2>Monthly Patterns</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">Percentage of hours at each safety level by month. Identifies the best and worst months for agricultural burning.</p>
-    <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
-    <div style="margin-top:20px">
-        <span class="insight">Best month: <strong>{MONTH_NAMES[best_month[0]-1]}</strong> — {best_month[1]}% safe</span>
-        <span class="insight">Worst month: <strong>{MONTH_NAMES[worst_month[0]-1]}</strong> — {worst_month[1]}% safe</span>
-    </div>
+<div class="sec">
+    <h2 class="sec-head">Monthly Seasonality</h2>
+    <div class="sec-rule"></div>
+    <p>The distribution of burn safety conditions varies dramatically by season. The chart below shows the percentage of hours at each safety level for every month, averaged across all {year_span} years.</p>
+    <figure>
+        <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+        <figcaption>Figure 1. Monthly distribution of burn safety conditions, {START_DATE[:4]}–{END_DATE[:4]}. Best month: {MONTH_NAMES[best_month[0]-1]} ({best_month[1]}% safe). Worst: {MONTH_NAMES[worst_month[0]-1]} ({worst_month[1]}% safe).</figcaption>
+    </figure>
 </div>
 
 <!-- Time of Day -->
-<div class="section">
-    <div class="section-sub">Diurnal Cycle</div>
-    <h2>Time-of-Day Patterns</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">How burn safety conditions shift throughout a 24-hour cycle, averaged across all days in the dataset.</p>
-    <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
-    <div style="margin-top:20px">
-        <span class="insight">Safest hour: <strong>{best_hour[0]}:00</strong> — {best_hour[1]}% safe</span>
-        <span class="insight">Riskiest hour: <strong>{worst_hour[0]}:00</strong> — {worst_hour[1]}% safe</span>
-    </div>
+<div class="sec">
+    <h2 class="sec-head">Time-of-Day Patterns</h2>
+    <div class="sec-rule"></div>
+    <p>Burn safety conditions shift substantially throughout the day. Early morning hours offer the highest likelihood of safe conditions, while midday is consistently the riskiest period.</p>
+    <figure>
+        <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
+        <figcaption>Figure 2. Hourly distribution of burn safety conditions across all days. Safest hour: {best_hour[0]}:00 ({best_hour[1]}% safe). Riskiest: {worst_hour[0]}:00 ({worst_hour[1]}% safe).</figcaption>
+    </figure>
 </div>
 
 <!-- Typical Day Profile -->
-<div class="section">
-    <div class="section-sub">Weather Profile</div>
-    <h2>Typical Day Weather Profile</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">Average temperature, humidity, and wind speed by hour of day across all years in the dataset.</p>
-    <div class="chart-container"><canvas id="profileChart"></canvas></div>
+<div class="sec">
+    <h2 class="sec-head">Typical Day Weather Profile</h2>
+    <div class="sec-rule"></div>
+    <p>The chart below shows average temperature, humidity, and wind speed by hour of day, illustrating the underlying weather dynamics that drive the safety classifications.</p>
+    <figure>
+        <div class="chart-container"><canvas id="profileChart"></canvas></div>
+        <figcaption>Figure 3. Mean hourly weather conditions across the full dataset.</figcaption>
+    </figure>
 </div>
 
-<!-- Two-column: Drivers + Duration -->
-<div class="section">
+<!-- Drivers + Duration side by side -->
+<div class="sec">
+    <h2 class="sec-head">Risk Factors &amp; Duration</h2>
+    <div class="sec-rule"></div>
+    <p>When conditions are classified as caution or unsafe, which weather metric is driving the classification? And how long do these conditions typically persist?</p>
     <div class="two-col">
         <div>
-            <div class="section-sub">Risk Factors</div>
-            <h2 style="font-size:1.5rem">What Drives Unsafe Conditions?</h2>
-            <div class="section-rule"></div>
-            <p class="section-desc">When conditions are yellow or red, which weather metric is responsible?</p>
-            <div class="chart-container" style="max-height:300px"><canvas id="driverChart"></canvas></div>
-            <div style="margin-top:12px; font-size:0.85rem; color:#888">
-                Note: Multiple metrics can co-drive a single hour's status.
-            </div>
+            <div class="sub-head">What Drives Unsafe Conditions?</div>
+            <figure>
+                <div class="chart-container" style="max-height:280px"><canvas id="driverChart"></canvas></div>
+                <figcaption>Figure 4. Frequency of each metric as the binding constraint in non-green hours. Multiple metrics may co-drive a single hour.</figcaption>
+            </figure>
         </div>
         <div>
-            <div class="section-sub">Duration Analysis</div>
-            <h2 style="font-size:1.5rem">How Long Do Conditions Last?</h2>
-            <div class="section-rule"></div>
-            <p class="section-desc">Statistics on consecutive hours at each safety level.</p>
+            <div class="sub-head">Consecutive Hours at Each Level</div>
             <table class="data-table">
-                <thead><tr><th>Status</th><th>Runs</th><th>Min</th><th>Median</th><th>Mean</th><th>P90</th><th>Max</th></tr></thead>
+                <thead><tr><th>Status</th><th>Episodes</th><th>Min</th><th>Median</th><th>Mean</th><th>P90</th><th>Max</th></tr></thead>
                 <tbody>{dur_rows}</tbody>
             </table>
-            <div style="margin-top:24px">
-                <div class="chart-container" style="max-height:250px"><canvas id="durationChart"></canvas></div>
-            </div>
+            <figure style="margin-top:20px">
+                <div class="chart-container" style="max-height:220px"><canvas id="durationChart"></canvas></div>
+                <figcaption>Figure 5. Distribution of safe-window durations.</figcaption>
+            </figure>
         </div>
     </div>
 </div>
 
 <!-- Best Burning Windows -->
-<div class="section">
-    <div class="section-sub">Optimal Windows</div>
-    <h2>Best Burning Windows</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">Average length of the longest safe (green) window by month, and the top 10 longest safe windows ever recorded.</p>
+<div class="sec">
+    <h2 class="sec-head">Optimal Burning Windows</h2>
+    <div class="sec-rule"></div>
+    <p>To help plan extended burn operations, this section examines the length of consecutive safe-condition windows — both the seasonal averages and the all-time longest recorded periods.</p>
     <div class="two-col">
         <div>
-            <h3>Avg. Longest Green Window by Month</h3>
-            <div class="chart-container" style="max-height:300px"><canvas id="windowChart"></canvas></div>
+            <div class="sub-head">Avg. Longest Safe Window by Month</div>
+            <figure>
+                <div class="chart-container" style="max-height:280px"><canvas id="windowChart"></canvas></div>
+                <figcaption>Figure 6. Average length (hours) of the longest consecutive safe window per month.</figcaption>
+            </figure>
         </div>
         <div>
-            <h3>Top 10 Longest Safe Windows</h3>
+            <div class="sub-head">Top 10 Longest Safe Windows on Record</div>
             <table class="data-table">
                 <thead><tr><th>#</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
                 <tbody>{top_rows}</tbody>
@@ -791,20 +779,21 @@ body {{
 </div>
 
 <!-- Year Trends -->
-<div class="section">
-    <div class="section-sub">Trends</div>
-    <h2>Year-over-Year Trends</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">Annual percentage of safe hours from {START_DATE[:4]} to {END_DATE[:4]}. Shows whether conditions are trending better or worse over the decade.</p>
-    <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+<div class="sec">
+    <h2 class="sec-head">Year-over-Year Trends</h2>
+    <div class="sec-rule"></div>
+    <p>Are conditions improving or worsening over time? The chart below shows the annual percentage of hours at each safety level from {START_DATE[:4]} to {END_DATE[:4]}.</p>
+    <figure>
+        <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+        <figcaption>Figure 7. Annual distribution of burn safety conditions.</figcaption>
+    </figure>
 </div>
 
 <!-- Heatmap -->
-<div class="section">
-    <div class="section-sub">Quick Reference</div>
-    <h2>Month × Hour Heatmap</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc">Percentage of safe (green) hours at each month/hour combination. Darker green = more often safe. This is the quick-reference guide for planning burns.</p>
+<div class="sec">
+    <h2 class="sec-head">Month × Hour Quick Reference</h2>
+    <div class="sec-rule"></div>
+    <p>The heatmap below shows the percentage of safe (green) hours at each month/hour combination. This is the single most useful reference for planning: <strong>darker green means more reliably safe</strong>.</p>
     <div class="hm-grid">
         <div></div>
         {heatmap_hours_html}
@@ -812,36 +801,28 @@ body {{
     </div>
 </div>
 
+</div><!-- /page-wide -->
+<div class="page">
+
 <!-- Methodology -->
-<div class="section" style="background:#F5F5F3">
-    <div class="section-sub">Appendix</div>
-    <h2 style="font-size:1.4rem">Methodology</h2>
-    <div class="section-rule"></div>
-    <p class="section-desc" style="margin-bottom:0">
-        This report analyzes {overall["total"]:,} hourly weather observations from {START_DATE} to {END_DATE}
-        at coordinates {LAT}°N, {abs(LON)}°W (Belize). Data sourced from the
-        <a href="https://open-meteo.com" style="color:#0067B1">Open-Meteo Archive API</a> (ERA5 reanalysis).
-        Scoring thresholds match the FarmWeather live app:
-        <strong>Humidity</strong> (&gt;40% safe, 30–40% caution, &lt;30% danger),
-        <strong>Wind</strong> (&lt;5 mph safe, 5–10 caution, &gt;10 danger),
-        <strong>Temperature</strong> (&lt;80°F safe, 80–90° caution, &gt;90° danger).
-        Overall status is the worst of the three metrics.
-    </p>
+<div class="sec" style="padding-bottom:0">
+    <h2 class="sec-head">Methodology</h2>
+    <div class="sec-rule"></div>
+    <p>This report analyzes {overall["total"]:,} hourly weather observations from {START_DATE} to {END_DATE} at coordinates {LAT}°N, {abs(LON)}°W (Belize). Data sourced from the <a href="https://open-meteo.com">Open-Meteo Archive API</a> (ERA5 reanalysis). Scoring thresholds: <strong>Humidity</strong> (&gt;40% safe, 30–40% caution, &lt;30% danger), <strong>Wind</strong> (&lt;5 mph safe, 5–10 caution, &gt;10 danger), <strong>Temperature</strong> (&lt;80°F safe, 80–90° caution, &gt;90° danger). Overall status is the worst of the three metrics.</p>
 </div>
 
 <!-- Footer -->
 <div class="report-footer">
     <div class="footer-text">
-        Data: Open-Meteo Archive API (ERA5 Reanalysis) &nbsp;·&nbsp; Generated {generated}<br>
-        FarmWeather Historical Analysis
+        Data: Open-Meteo Archive API (ERA5 Reanalysis)<br>
+        Generated {generated}
     </div>
     <div class="footer-logo"><img src="rare-logo.png" alt="Rare"></div>
 </div>
 
-</div><!-- /container -->
+</div><!-- /page -->
 
 <script>
-// ── Chart Data ──
 const MONTHS = {json.dumps(MONTH_NAMES)};
 const GREEN = '{COLORS["green"]}';
 const YELLOW = '{COLORS["yellow"]}';
@@ -859,30 +840,24 @@ const windowData = {json.dumps({str(m): best["monthly_avg"][m] for m in range(1,
 const yearlyData = {json.dumps(yearly)};
 
 Chart.defaults.font.family = "'Source Sans 3', sans-serif";
-Chart.defaults.font.size = 13;
-Chart.defaults.color = '#888';
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#999';
 
-// Helper: stacked options
 function stackedOpts() {{
     return {{
         responsive: true,
         maintainAspectRatio: false,
         plugins: {{
-            legend: {{ position: 'top', labels: {{ usePointStyle: true, padding: 20, font: {{ size: 12 }} }} }},
-            tooltip: {{
-                callbacks: {{
-                    label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'
-                }}
-            }}
+            legend: {{ position: 'top', labels: {{ usePointStyle: true, padding: 20, font: {{ size: 11 }} }} }},
+            tooltip: {{ callbacks: {{ label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' }} }}
         }},
         scales: {{
-            x: {{ grid: {{ display: false }}, ticks: {{ color: '#999' }} }},
-            y: {{ stacked: true, max: 100, ticks: {{ callback: v => v + '%', color: '#999' }}, grid: {{ color: '#f0f0f0' }} }}
+            x: {{ grid: {{ display: false }} }},
+            y: {{ stacked: true, max: 100, ticks: {{ callback: v => v + '%' }}, grid: {{ color: '#f5f5f5' }} }}
         }}
     }};
 }}
 
-// Monthly Seasonality Chart
 new Chart(document.getElementById('monthlyChart'), {{
     type: 'bar',
     data: {{
@@ -893,148 +868,104 @@ new Chart(document.getElementById('monthlyChart'), {{
             {{ label: 'Danger', data: MONTHS.map((_,i) => monthlyData[String(i+1)]['2']), backgroundColor: RED }},
         ]
     }},
-    options: {{ ...stackedOpts(), scales: {{ ...stackedOpts().scales, x: {{ stacked: true, grid: {{ display: false }}, ticks: {{ color: '#999' }} }} }} }}
+    options: {{ ...stackedOpts(), scales: {{ ...stackedOpts().scales, x: {{ stacked: true, grid: {{ display: false }} }} }} }}
 }});
 
-// Hourly Patterns Chart
 new Chart(document.getElementById('hourlyChart'), {{
     type: 'line',
     data: {{
         labels: Array.from({{length:24}}, (_,i) => i + ':00'),
         datasets: [
-            {{ label: 'Safe', data: Array.from({{length:24}}, (_,i) => hourlyData[String(i)]['0']), backgroundColor: GREEN+'40', borderColor: GREEN, fill: true, tension: 0.3 }},
-            {{ label: 'Caution', data: Array.from({{length:24}}, (_,i) => hourlyData[String(i)]['1']), backgroundColor: YELLOW+'40', borderColor: YELLOW, fill: true, tension: 0.3 }},
-            {{ label: 'Danger', data: Array.from({{length:24}}, (_,i) => hourlyData[String(i)]['2']), backgroundColor: RED+'40', borderColor: RED, fill: true, tension: 0.3 }},
+            {{ label: 'Safe', data: Array.from({{length:24}}, (_,i) => hourlyData[String(i)]['0']), backgroundColor: GREEN+'30', borderColor: GREEN, fill: true, tension: 0.3, borderWidth: 2 }},
+            {{ label: 'Caution', data: Array.from({{length:24}}, (_,i) => hourlyData[String(i)]['1']), backgroundColor: YELLOW+'30', borderColor: YELLOW, fill: true, tension: 0.3, borderWidth: 2 }},
+            {{ label: 'Danger', data: Array.from({{length:24}}, (_,i) => hourlyData[String(i)]['2']), backgroundColor: RED+'30', borderColor: RED, fill: true, tension: 0.3, borderWidth: 2 }},
         ]
     }},
     options: stackedOpts()
 }});
 
-// Daily Profile Chart
 new Chart(document.getElementById('profileChart'), {{
     type: 'line',
     data: {{
         labels: Array.from({{length:24}}, (_,i) => i + ':00'),
         datasets: [
-            {{ label: 'Humidity (%)', data: Array.from({{length:24}}, (_,i) => profileData[String(i)].humid), borderColor: BLUE, backgroundColor: BLUE+'15', borderWidth: 2.5, tension: 0.3, yAxisID: 'y' }},
-            {{ label: 'Temperature (°F)', data: Array.from({{length:24}}, (_,i) => profileData[String(i)].temp), borderColor: GOLD, backgroundColor: GOLD+'15', borderWidth: 2.5, tension: 0.3, yAxisID: 'y' }},
-            {{ label: 'Wind (mph)', data: Array.from({{length:24}}, (_,i) => profileData[String(i)].wind), borderColor: TEAL, backgroundColor: TEAL+'15', borderWidth: 2.5, tension: 0.3, yAxisID: 'y2' }},
+            {{ label: 'Humidity (%)', data: Array.from({{length:24}}, (_,i) => profileData[String(i)].humid), borderColor: BLUE, backgroundColor: BLUE+'10', borderWidth: 2, tension: 0.3, yAxisID: 'y', pointRadius: 3 }},
+            {{ label: 'Temperature (°F)', data: Array.from({{length:24}}, (_,i) => profileData[String(i)].temp), borderColor: GOLD, backgroundColor: GOLD+'10', borderWidth: 2, tension: 0.3, yAxisID: 'y', pointRadius: 3 }},
+            {{ label: 'Wind (mph)', data: Array.from({{length:24}}, (_,i) => profileData[String(i)].wind), borderColor: TEAL, backgroundColor: TEAL+'10', borderWidth: 2, tension: 0.3, yAxisID: 'y2', pointRadius: 3 }},
         ]
     }},
     options: {{
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         interaction: {{ mode: 'index', intersect: false }},
-        plugins: {{
-            legend: {{ position: 'top', labels: {{ usePointStyle: true, padding: 20, font: {{ size: 12 }} }} }}
-        }},
+        plugins: {{ legend: {{ position: 'top', labels: {{ usePointStyle: true, padding: 20, font: {{ size: 11 }} }} }} }},
         scales: {{
-            x: {{ grid: {{ display: false }}, ticks: {{ color: '#999' }} }},
-            y: {{ position: 'left', title: {{ display: true, text: 'Humidity (%) / Temp (°F)', color: '#999' }}, grid: {{ color: '#f0f0f0' }}, ticks: {{ color: '#999' }} }},
-            y2: {{ position: 'right', title: {{ display: true, text: 'Wind (mph)', color: '#999' }}, grid: {{ display: false }}, min: 0, ticks: {{ color: '#999' }} }}
+            x: {{ grid: {{ display: false }} }},
+            y: {{ position: 'left', title: {{ display: true, text: 'Humidity (%) / Temp (°F)', color: '#aaa', font: {{ size: 11 }} }}, grid: {{ color: '#f5f5f5' }} }},
+            y2: {{ position: 'right', title: {{ display: true, text: 'Wind (mph)', color: '#aaa', font: {{ size: 11 }} }}, grid: {{ display: false }}, min: 0 }}
         }}
     }}
 }});
 
-// Driver Donut
 new Chart(document.getElementById('driverChart'), {{
     type: 'doughnut',
     data: {{
         labels: ['Humidity', 'Wind', 'Temperature'],
-        datasets: [{{
-            data: [driverData.humidity, driverData.wind, driverData.temperature],
-            backgroundColor: [BLUE, TEAL, GOLD],
-            borderWidth: 0,
-            hoverOffset: 8,
-        }}]
+        datasets: [{{ data: [driverData.humidity, driverData.wind, driverData.temperature], backgroundColor: [BLUE, TEAL, GOLD], borderWidth: 0, hoverOffset: 6 }}]
     }},
     options: {{
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: {{
-            legend: {{ position: 'bottom', labels: {{ usePointStyle: true, padding: 16, font: {{ size: 12 }} }} }},
-            tooltip: {{
-                callbacks: {{
-                    label: ctx => {{
-                        const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
-                        return ctx.label + ': ' + ctx.raw.toLocaleString() + ' (' + (ctx.raw/total*100).toFixed(1) + '%)';
-                    }}
-                }}
-            }}
+            legend: {{ position: 'bottom', labels: {{ usePointStyle: true, padding: 14, font: {{ size: 11 }} }} }},
+            tooltip: {{ callbacks: {{ label: ctx => {{ const t = ctx.dataset.data.reduce((a,b)=>a+b,0); return ctx.label+': '+ctx.raw.toLocaleString()+' ('+(ctx.raw/t*100).toFixed(1)+'%)'; }} }} }}
         }},
         cutout: '55%',
     }}
 }});
 
-// Green Duration Histogram
 new Chart(document.getElementById('durationChart'), {{
     type: 'bar',
     data: {{
         labels: Object.keys(greenBins),
-        datasets: [{{
-            label: 'Safe windows',
-            data: Object.values(greenBins),
-            backgroundColor: TEAL,
-            borderRadius: 4,
-        }}]
+        datasets: [{{ data: Object.values(greenBins), backgroundColor: TEAL, borderRadius: 3 }}]
     }},
     options: {{
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: {{ legend: {{ display: false }} }},
-        scales: {{
-            x: {{ grid: {{ display: false }}, ticks: {{ color: '#999' }} }},
-            y: {{ title: {{ display: true, text: 'Count', color: '#999' }}, grid: {{ color: '#f0f0f0' }}, ticks: {{ color: '#999' }} }}
-        }}
+        scales: {{ x: {{ grid: {{ display: false }} }}, y: {{ title: {{ display: true, text: 'Count', color: '#aaa', font: {{ size: 11 }} }}, grid: {{ color: '#f5f5f5' }} }} }}
     }}
 }});
 
-// Best Windows by Month
 new Chart(document.getElementById('windowChart'), {{
     type: 'bar',
     data: {{
         labels: MONTHS,
-        datasets: [{{
-            label: 'Avg longest safe window (hours)',
-            data: MONTHS.map((_,i) => windowData[String(i+1)]),
-            backgroundColor: BLUE,
-            borderRadius: 4,
-        }}]
+        datasets: [{{ data: MONTHS.map((_,i) => windowData[String(i+1)]), backgroundColor: BLUE, borderRadius: 3 }}]
     }},
     options: {{
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: {{ legend: {{ display: false }} }},
-        scales: {{
-            x: {{ grid: {{ display: false }}, ticks: {{ color: '#999' }} }},
-            y: {{ title: {{ display: true, text: 'Hours', color: '#999' }}, grid: {{ color: '#f0f0f0' }}, ticks: {{ color: '#999' }} }}
-        }}
+        scales: {{ x: {{ grid: {{ display: false }} }}, y: {{ title: {{ display: true, text: 'Hours', color: '#aaa', font: {{ size: 11 }} }}, grid: {{ color: '#f5f5f5' }} }} }}
     }}
 }});
 
-// Year Trends
 const years = Object.keys(yearlyData).sort();
 new Chart(document.getElementById('yearlyChart'), {{
     type: 'line',
     data: {{
         labels: years,
         datasets: [
-            {{ label: 'Safe %', data: years.map(y => yearlyData[y]['0']), borderColor: GREEN, backgroundColor: GREEN+'15', fill: true, tension: 0.3, borderWidth: 2.5 }},
-            {{ label: 'Caution %', data: years.map(y => yearlyData[y]['1']), borderColor: YELLOW, backgroundColor: YELLOW+'15', fill: true, tension: 0.3, borderWidth: 2.5 }},
-            {{ label: 'Danger %', data: years.map(y => yearlyData[y]['2']), borderColor: RED, backgroundColor: RED+'15', fill: true, tension: 0.3, borderWidth: 2.5 }},
+            {{ label: 'Safe %', data: years.map(y => yearlyData[y]['0']), borderColor: GREEN, backgroundColor: GREEN+'12', fill: true, tension: 0.3, borderWidth: 2 }},
+            {{ label: 'Caution %', data: years.map(y => yearlyData[y]['1']), borderColor: YELLOW, backgroundColor: YELLOW+'12', fill: true, tension: 0.3, borderWidth: 2 }},
+            {{ label: 'Danger %', data: years.map(y => yearlyData[y]['2']), borderColor: RED, backgroundColor: RED+'12', fill: true, tension: 0.3, borderWidth: 2 }},
         ]
     }},
     options: {{
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: {{
-            legend: {{ position: 'top', labels: {{ usePointStyle: true, padding: 20, font: {{ size: 12 }} }} }},
+            legend: {{ position: 'top', labels: {{ usePointStyle: true, padding: 20, font: {{ size: 11 }} }} }},
             tooltip: {{ callbacks: {{ label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' }} }}
         }},
-        scales: {{
-            x: {{ grid: {{ display: false }}, ticks: {{ color: '#999' }} }},
-            y: {{ max: 100, ticks: {{ callback: v => v + '%', color: '#999' }}, grid: {{ color: '#f0f0f0' }} }}
-        }}
+        scales: {{ x: {{ grid: {{ display: false }} }}, y: {{ max: 100, ticks: {{ callback: v => v + '%' }}, grid: {{ color: '#f5f5f5' }} }} }}
     }}
 }});
 </script>
