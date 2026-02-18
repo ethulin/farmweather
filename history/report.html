@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historical Burn Conditions Report — Belize</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.report-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+}
+.report-header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+.report-header .meta {
+    font-size: 0.95rem;
+    opacity: 0.7;
+    font-weight: 300;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+}
+
+/* Section Cards */
+.card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+.card h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1a1a2e;
+}
+.card .section-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Executive Summary */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+.stat-card {
+    text-align: center;
+    padding: 28px 16px;
+    border-radius: 14px;
+    color: #fff;
+}
+.stat-card.green { background: linear-gradient(135deg, #1e9e38, #22b740); }
+.stat-card.yellow { background: linear-gradient(135deg, #d49500, #e6a800); }
+.stat-card.red { background: linear-gradient(135deg, #c62828, #d93030); }
+.stat-card .pct {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.stat-card .label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.stat-card .count {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+.takeaway {
+    background: #f8f9fa;
+    border-left: 4px solid #0f3460;
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+/* Charts */
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-height: 400px;
+}
+.chart-container canvas {
+    max-height: 400px;
+}
+
+/* Two-column layout */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+/* Tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 16px;
+}
+.data-table th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #f8f9fa; }
+
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Heatmap */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(24, 1fr);
+    gap: 2px;
+    font-size: 0.7rem;
+    margin-top: 16px;
+}
+.heatmap-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.65rem;
+    min-height: 28px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.heatmap-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: #555;
+    padding-right: 8px;
+    justify-content: flex-end;
+}
+.heatmap-hour {
+    text-align: center;
+    font-weight: 600;
+    color: #888;
+    font-size: 0.72rem;
+    padding-bottom: 4px;
+}
+
+/* Insights */
+.insight {
+    display: inline-block;
+    background: #f0f7ff;
+    border: 1px solid #d0e3ff;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: #1a5276;
+    margin: 4px 4px 4px 0;
+}
+
+/* Footer */
+.report-footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: #999;
+    font-size: 0.82rem;
+    line-height: 1.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .report-header h1 { font-size: 1.6rem; }
+    .heatmap-grid { overflow-x: auto; }
+}
+
+@media print {
+    body { background: #fff; }
+    .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+    .report-header { background: #1a1a2e; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<div class="report-header">
+    <h1>Historical Burn Conditions Report</h1>
+    <div class="meta">Belize &nbsp;·&nbsp; 16.725°N, 88.84°W &nbsp;·&nbsp; 2015–2024 &nbsp;·&nbsp; 87,672 hourly observations</div>
+    <div class="meta" style="margin-top:4px; opacity:0.5">Generated February 18, 2026 at 07:57 AM</div>
+</div>
+
+<div class="container">
+
+<!-- Executive Summary -->
+<div class="card">
+    <h2>Executive Summary</h2>
+    <p class="section-desc">Overall distribution of burn safety conditions across 10 years of hourly weather data.</p>
+    <div class="summary-grid">
+        <div class="stat-card green">
+            <div class="pct">26.8%</div>
+            <div class="label">Safe to Burn</div>
+            <div class="count">23,506 hours</div>
+        </div>
+        <div class="stat-card yellow">
+            <div class="pct">64.0%</div>
+            <div class="label">Use Caution</div>
+            <div class="count">56,111 hours</div>
+        </div>
+        <div class="stat-card red">
+            <div class="pct">9.2%</div>
+            <div class="label">Do Not Burn</div>
+            <div class="count">8,055 hours</div>
+        </div>
+    </div>
+    <div class="takeaway">
+        <strong>Key finding:</strong> <em>Wind</em> is the primary driver of unsafe conditions,
+        responsible for triggering caution or danger in 62,184 of 64,166 non-green hours.
+        The safest month is <strong>Oct</strong> (45.4% green) and the riskiest is
+        <strong>Jul</strong> (11.9% green).
+        Within a typical day, <strong>5:00</strong> is the safest hour (42.5% green)
+        and <strong>12:00</strong> is the riskiest (9.4% green).
+    </div>
+</div>
+
+<!-- Monthly Seasonality -->
+<div class="card">
+    <h2>Monthly Seasonality</h2>
+    <p class="section-desc">Percentage of hours at each safety level by month. Identifies the best and worst months for agricultural burning.</p>
+    <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+    <div style="margin-top:16px">
+        <span class="insight">Best month: <strong>Oct</strong> — 45.4% safe</span>
+        <span class="insight">Worst month: <strong>Jul</strong> — 11.9% safe</span>
+    </div>
+</div>
+
+<!-- Time of Day -->
+<div class="card">
+    <h2>Time-of-Day Patterns</h2>
+    <p class="section-desc">How burn safety conditions shift throughout a 24-hour cycle, averaged across all days in the dataset.</p>
+    <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
+    <div style="margin-top:16px">
+        <span class="insight">Safest hour: <strong>5:00</strong> — 42.5% safe</span>
+        <span class="insight">Riskiest hour: <strong>12:00</strong> — 9.4% safe</span>
+    </div>
+</div>
+
+<!-- Typical Day Profile -->
+<div class="card">
+    <h2>Typical Day Weather Profile</h2>
+    <p class="section-desc">Average temperature, humidity, and wind speed by hour of day. Dashed lines show the scoring thresholds.</p>
+    <div class="chart-container"><canvas id="profileChart"></canvas></div>
+</div>
+
+<!-- Two-column: Drivers + Duration -->
+<div class="two-col">
+    <div class="card">
+        <h2>What Drives Unsafe Conditions?</h2>
+        <p class="section-desc">When conditions are yellow or red, which weather metric is responsible?</p>
+        <div class="chart-container" style="max-height:300px"><canvas id="driverChart"></canvas></div>
+        <div style="margin-top:12px; font-size:0.85rem; color:#666">
+            Note: Multiple metrics can co-drive a single hour's status.
+        </div>
+    </div>
+    <div class="card">
+        <h2>How Long Do Conditions Last?</h2>
+        <p class="section-desc">Statistics on consecutive hours at each safety level.</p>
+        <table class="data-table">
+            <thead><tr><th>Status</th><th>Runs</th><th>Min</th><th>Median</th><th>Mean</th><th>P90</th><th>Max</th></tr></thead>
+            <tbody><tr>
+            <td><span class="status-dot" style="background:#22b740"></span>Safe (Green)</td>
+            <td>3957</td><td>1h</td><td>3h</td>
+            <td>5.9h</td><td>16h</td><td>118h</td>
+        </tr>
+<tr>
+            <td><span class="status-dot" style="background:#e6a800"></span>Caution (Yellow)</td>
+            <td>6109</td><td>1h</td><td>5h</td>
+            <td>9.2h</td><td>21h</td><td>116h</td>
+        </tr>
+<tr>
+            <td><span class="status-dot" style="background:#d93030"></span>Unsafe (Red)</td>
+            <td>2154</td><td>1h</td><td>2.0h</td>
+            <td>3.7h</td><td>9h</td><td>86h</td>
+        </tr>
+</tbody>
+        </table>
+        <div style="margin-top:20px">
+            <div class="chart-container" style="max-height:250px"><canvas id="durationChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Best Burning Windows -->
+<div class="card">
+    <h2>Best Burning Windows</h2>
+    <p class="section-desc">Average length of the longest safe (green) window by month, and the top 10 longest safe windows ever recorded.</p>
+    <div class="two-col">
+        <div>
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:12px">Avg. Longest Green Window by Month</h3>
+            <div class="chart-container" style="max-height:300px"><canvas id="windowChart"></canvas></div>
+        </div>
+        <div>
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:12px">Top 10 Longest Safe Windows</h3>
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Start</th><th>End</th><th>Duration</th></tr></thead>
+                <tbody><tr><td>1</td><td>2016-11-08 13:00</td><td>2016-11-13 10:00</td><td><strong>118h</strong></td></tr>
+<tr><td>2</td><td>2016-10-15 16:00</td><td>2016-10-19 13:00</td><td><strong>94h</strong></td></tr>
+<tr><td>3</td><td>2016-09-30 14:00</td><td>2016-10-03 11:00</td><td><strong>70h</strong></td></tr>
+<tr><td>4</td><td>2015-11-04 13:00</td><td>2015-11-07 09:00</td><td><strong>69h</strong></td></tr>
+<tr><td>5</td><td>2015-10-18 22:00</td><td>2015-10-21 12:00</td><td><strong>63h</strong></td></tr>
+<tr><td>6</td><td>2015-12-01 16:00</td><td>2015-12-04 00:00</td><td><strong>57h</strong></td></tr>
+<tr><td>7</td><td>2015-10-16 13:00</td><td>2015-10-18 20:00</td><td><strong>56h</strong></td></tr>
+<tr><td>8</td><td>2016-10-31 11:00</td><td>2016-11-02 15:00</td><td><strong>53h</strong></td></tr>
+<tr><td>9</td><td>2016-06-06 08:00</td><td>2016-06-08 11:00</td><td><strong>52h</strong></td></tr>
+<tr><td>10</td><td>2024-01-31 03:00</td><td>2024-02-02 04:00</td><td><strong>50h</strong></td></tr>
+</tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Year Trends -->
+<div class="card">
+    <h2>Year-over-Year Trends</h2>
+    <p class="section-desc">Annual percentage of safe hours from 2015 to 2024. Shows whether conditions are trending better or worse.</p>
+    <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+</div>
+
+<!-- Heatmap -->
+<div class="card">
+    <h2>Month × Hour Heatmap</h2>
+    <p class="section-desc">Percentage of safe (green) hours at each month/hour combination. Darker green = more often safe. This is the quick-reference guide for planning burns.</p>
+    <div class="heatmap-grid">
+        <div></div>
+        <div class="heatmap-hour">0</div><div class="heatmap-hour">1</div><div class="heatmap-hour">2</div><div class="heatmap-hour">3</div><div class="heatmap-hour">4</div><div class="heatmap-hour">5</div><div class="heatmap-hour">6</div><div class="heatmap-hour">7</div><div class="heatmap-hour">8</div><div class="heatmap-hour">9</div><div class="heatmap-hour">10</div><div class="heatmap-hour">11</div><div class="heatmap-hour">12</div><div class="heatmap-hour">13</div><div class="heatmap-hour">14</div><div class="heatmap-hour">15</div><div class="heatmap-hour">16</div><div class="heatmap-hour">17</div><div class="heatmap-hour">18</div><div class="heatmap-hour">19</div><div class="heatmap-hour">20</div><div class="heatmap-hour">21</div><div class="heatmap-hour">22</div><div class="heatmap-hour">23</div>
+        <div class="heatmap-label">Jan</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#e6a800">38</div><div class="heatmap-cell" style="background:#6abf69">40</div><div class="heatmap-cell" style="background:#6abf69">41</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#6abf69">42</div><div class="heatmap-cell" style="background:#e6a800">36</div><div class="heatmap-cell" style="background:#e6a800">31</div><div class="heatmap-cell" style="background:#e6a800">25</div><div class="heatmap-cell" style="background:#d47800">20</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">20</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#6abf69">41</div><div class="heatmap-cell" style="background:#6abf69">42</div><div class="heatmap-cell" style="background:#6abf69">44</div><div class="heatmap-cell" style="background:#6abf69">42</div><div class="heatmap-cell" style="background:#e6a800">40</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-label">Feb</div><div class="heatmap-cell" style="background:#e6a800">26</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#e6a800">29</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#e6a800">31</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#e6a800">26</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#d47800">21</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">10</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#e6a800">29</div><div class="heatmap-cell" style="background:#e6a800">29</div><div class="heatmap-cell" style="background:#e6a800">29</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#e6a800">26</div><div class="heatmap-label">Mar</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">21</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#d47800">18</div><div class="heatmap-cell" style="background:#d47800">13</div><div class="heatmap-cell" style="background:#d47800">10</div><div class="heatmap-cell" style="background:#d93030">5</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">3</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">6</div><div class="heatmap-cell" style="background:#d93030">6</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">20</div><div class="heatmap-cell" style="background:#d47800">18</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">18</div><div class="heatmap-label">Apr</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#e6a800">31</div><div class="heatmap-cell" style="background:#e6a800">33</div><div class="heatmap-cell" style="background:#e6a800">32</div><div class="heatmap-cell" style="background:#e6a800">25</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">11</div><div class="heatmap-cell" style="background:#d93030">5</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">3</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">5</div><div class="heatmap-cell" style="background:#d93030">5</div><div class="heatmap-cell" style="background:#d93030">7</div><div class="heatmap-cell" style="background:#d47800">13</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">18</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-label">May</div><div class="heatmap-cell" style="background:#d47800">18</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#e6a800">33</div><div class="heatmap-cell" style="background:#e6a800">34</div><div class="heatmap-cell" style="background:#e6a800">29</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-cell" style="background:#d93030">7</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">6</div><div class="heatmap-cell" style="background:#d93030">7</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d93030">8</div><div class="heatmap-cell" style="background:#d47800">10</div><div class="heatmap-cell" style="background:#d47800">11</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-label">Jun</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#e6a800">33</div><div class="heatmap-cell" style="background:#e6a800">37</div><div class="heatmap-cell" style="background:#e6a800">37</div><div class="heatmap-cell" style="background:#6abf69">40</div><div class="heatmap-cell" style="background:#e6a800">38</div><div class="heatmap-cell" style="background:#e6a800">33</div><div class="heatmap-cell" style="background:#e6a800">25</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">13</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">10</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">11</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">22</div><div class="heatmap-cell" style="background:#d47800">22</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#d47800">22</div><div class="heatmap-cell" style="background:#d47800">22</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-label">Jul</div><div class="heatmap-cell" style="background:#d47800">13</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#e6a800">26</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d93030">7</div><div class="heatmap-cell" style="background:#d93030">3</div><div class="heatmap-cell" style="background:#d93030">1</div><div class="heatmap-cell" style="background:#d93030">0</div><div class="heatmap-cell" style="background:#d93030">1</div><div class="heatmap-cell" style="background:#d93030">1</div><div class="heatmap-cell" style="background:#d93030">2</div><div class="heatmap-cell" style="background:#d93030">2</div><div class="heatmap-cell" style="background:#d93030">3</div><div class="heatmap-cell" style="background:#d93030">9</div><div class="heatmap-cell" style="background:#d47800">20</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-label">Aug</div><div class="heatmap-cell" style="background:#e6a800">34</div><div class="heatmap-cell" style="background:#e6a800">37</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-cell" style="background:#6abf69">44</div><div class="heatmap-cell" style="background:#6abf69">49</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-cell" style="background:#e6a800">32</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#d47800">11</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">3</div><div class="heatmap-cell" style="background:#d93030">4</div><div class="heatmap-cell" style="background:#d93030">6</div><div class="heatmap-cell" style="background:#d93030">7</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#e6a800">32</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#e6a800">31</div><div class="heatmap-cell" style="background:#e6a800">34</div><div class="heatmap-label">Sep</div><div class="heatmap-cell" style="background:#6abf69">47</div><div class="heatmap-cell" style="background:#6abf69">49</div><div class="heatmap-cell" style="background:#6abf69">53</div><div class="heatmap-cell" style="background:#6abf69">58</div><div class="heatmap-cell" style="background:#22b740">62</div><div class="heatmap-cell" style="background:#22b740">68</div><div class="heatmap-cell" style="background:#22b740">64</div><div class="heatmap-cell" style="background:#6abf69">54</div><div class="heatmap-cell" style="background:#6abf69">46</div><div class="heatmap-cell" style="background:#e6a800">37</div><div class="heatmap-cell" style="background:#d47800">21</div><div class="heatmap-cell" style="background:#d93030">9</div><div class="heatmap-cell" style="background:#d93030">9</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#e6a800">25</div><div class="heatmap-cell" style="background:#e6a800">26</div><div class="heatmap-cell" style="background:#e6a800">30</div><div class="heatmap-cell" style="background:#6abf69">57</div><div class="heatmap-cell" style="background:#6abf69">51</div><div class="heatmap-cell" style="background:#6abf69">42</div><div class="heatmap-cell" style="background:#6abf69">41</div><div class="heatmap-cell" style="background:#6abf69">44</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-label">Oct</div><div class="heatmap-cell" style="background:#6abf69">53</div><div class="heatmap-cell" style="background:#6abf69">54</div><div class="heatmap-cell" style="background:#6abf69">59</div><div class="heatmap-cell" style="background:#6abf69">60</div><div class="heatmap-cell" style="background:#22b740">61</div><div class="heatmap-cell" style="background:#22b740">64</div><div class="heatmap-cell" style="background:#6abf69">60</div><div class="heatmap-cell" style="background:#6abf69">50</div><div class="heatmap-cell" style="background:#6abf69">48</div><div class="heatmap-cell" style="background:#e6a800">37</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">17</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#d47800">23</div><div class="heatmap-cell" style="background:#e6a800">27</div><div class="heatmap-cell" style="background:#e6a800">35</div><div class="heatmap-cell" style="background:#6abf69">50</div><div class="heatmap-cell" style="background:#22b740">60</div><div class="heatmap-cell" style="background:#6abf69">56</div><div class="heatmap-cell" style="background:#6abf69">53</div><div class="heatmap-cell" style="background:#6abf69">50</div><div class="heatmap-cell" style="background:#6abf69">51</div><div class="heatmap-cell" style="background:#6abf69">56</div><div class="heatmap-label">Nov</div><div class="heatmap-cell" style="background:#6abf69">51</div><div class="heatmap-cell" style="background:#6abf69">54</div><div class="heatmap-cell" style="background:#6abf69">51</div><div class="heatmap-cell" style="background:#6abf69">53</div><div class="heatmap-cell" style="background:#6abf69">55</div><div class="heatmap-cell" style="background:#6abf69">54</div><div class="heatmap-cell" style="background:#6abf69">54</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#e6a800">33</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">21</div><div class="heatmap-cell" style="background:#d47800">21</div><div class="heatmap-cell" style="background:#d47800">21</div><div class="heatmap-cell" style="background:#e6a800">28</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-cell" style="background:#6abf69">52</div><div class="heatmap-cell" style="background:#6abf69">52</div><div class="heatmap-cell" style="background:#6abf69">51</div><div class="heatmap-cell" style="background:#6abf69">49</div><div class="heatmap-cell" style="background:#6abf69">50</div><div class="heatmap-cell" style="background:#6abf69">51</div><div class="heatmap-label">Dec</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#e6a800">39</div><div class="heatmap-cell" style="background:#6abf69">41</div><div class="heatmap-cell" style="background:#6abf69">44</div><div class="heatmap-cell" style="background:#6abf69">44</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-cell" style="background:#6abf69">44</div><div class="heatmap-cell" style="background:#e6a800">38</div><div class="heatmap-cell" style="background:#e6a800">31</div><div class="heatmap-cell" style="background:#d47800">24</div><div class="heatmap-cell" style="background:#d47800">19</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#d47800">15</div><div class="heatmap-cell" style="background:#d47800">12</div><div class="heatmap-cell" style="background:#d47800">13</div><div class="heatmap-cell" style="background:#d47800">14</div><div class="heatmap-cell" style="background:#d47800">16</div><div class="heatmap-cell" style="background:#e6a800">35</div><div class="heatmap-cell" style="background:#6abf69">45</div><div class="heatmap-cell" style="background:#6abf69">46</div><div class="heatmap-cell" style="background:#6abf69">42</div><div class="heatmap-cell" style="background:#e6a800">38</div><div class="heatmap-cell" style="background:#e6a800">34</div><div class="heatmap-cell" style="background:#e6a800">35</div>
+    </div>
+</div>
+
+<!-- Methodology -->
+<div class="card" style="background:#f8f9fa">
+    <h2 style="font-size:1.1rem">Methodology</h2>
+    <p class="section-desc" style="margin-bottom:0">
+        This report analyzes 87,672 hourly weather observations from 2015-01-01 to 2024-12-31
+        at coordinates 16.725°N, 88.84°W (Belize). Data sourced from the
+        <a href="https://open-meteo.com" style="color:#0f3460">Open-Meteo Archive API</a> (ERA5 reanalysis).
+        Scoring thresholds match the FarmWeather live app:
+        <strong>Humidity</strong> (>40% safe, 30–40% caution, <30% danger),
+        <strong>Wind</strong> (<5 mph safe, 5–10 caution, >10 danger),
+        <strong>Temperature</strong> (<80°F safe, 80–90° caution, >90° danger).
+        Overall status is the worst of the three metrics.
+    </p>
+</div>
+
+</div>
+
+<div class="report-footer">
+    Data: Open-Meteo Archive API (ERA5 Reanalysis) &nbsp;·&nbsp; Generated February 18, 2026 at 07:57 AM<br>
+    Belize Maya Forest Trust — FarmWeather Historical Analysis
+</div>
+
+<script>
+// ── Chart Data ──
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const GREEN = '#22b740';
+const YELLOW = '#e6a800';
+const RED = '#d93030';
+
+const monthlyData = {"1": {"0": 31.9, "1": 58.1, "2": 10.0}, "2": {"0": 21.1, "1": 63.7, "2": 15.2}, "3": {"0": 15.9, "1": 71.4, "2": 12.7}, "4": {"0": 15.2, "1": 73.5, "2": 11.2}, "5": {"0": 17.2, "1": 73.5, "2": 9.3}, "6": {"0": 23.5, "1": 64.8, "2": 11.8}, "7": {"0": 11.9, "1": 72.7, "2": 15.4}, "8": {"0": 25.9, "1": 66.9, "2": 7.2}, "9": {"0": 40.3, "1": 57.8, "2": 1.8}, "10": {"0": 45.4, "1": 49.5, "2": 5.0}, "11": {"0": 41.4, "1": 53.7, "2": 4.9}, "12": {"0": 32.0, "1": 62.1, "2": 5.9}};
+const hourlyData = {"0": {"0": 32.0, "1": 61.2, "2": 6.8}, "1": {"0": 34.1, "1": 59.6, "2": 6.3}, "2": {"0": 36.5, "1": 57.4, "2": 6.1}, "3": {"0": 39.0, "1": 55.1, "2": 5.9}, "4": {"0": 40.9, "1": 53.7, "2": 5.4}, "5": {"0": 42.5, "1": 51.9, "2": 5.6}, "6": {"0": 40.8, "1": 53.9, "2": 5.2}, "7": {"0": 33.7, "1": 55.5, "2": 10.8}, "8": {"0": 28.6, "1": 56.4, "2": 15.0}, "9": {"0": 22.2, "1": 61.8, "2": 16.0}, "10": {"0": 14.7, "1": 69.9, "2": 15.4}, "11": {"0": 9.7, "1": 75.0, "2": 15.4}, "12": {"0": 9.4, "1": 74.8, "2": 15.8}, "13": {"0": 10.1, "1": 75.1, "2": 14.8}, "14": {"0": 11.2, "1": 73.8, "2": 15.0}, "15": {"0": 12.3, "1": 73.4, "2": 14.3}, "16": {"0": 15.3, "1": 73.0, "2": 11.8}, "17": {"0": 21.7, "1": 71.3, "2": 7.1}, "18": {"0": 32.3, "1": 65.4, "2": 2.3}, "19": {"0": 33.3, "1": 64.7, "2": 2.0}, "20": {"0": 32.0, "1": 64.5, "2": 3.5}, "21": {"0": 30.3, "1": 64.1, "2": 5.6}, "22": {"0": 29.8, "1": 62.9, "2": 7.3}, "23": {"0": 31.0, "1": 61.6, "2": 7.4}};
+const profileData = {"0": {"temp": 68.2, "humid": 97.2, "wind": 6.2}, "1": {"temp": 68.1, "humid": 97.2, "wind": 6.1}, "2": {"temp": 67.9, "humid": 97.5, "wind": 6.0}, "3": {"temp": 67.8, "humid": 97.6, "wind": 5.8}, "4": {"temp": 67.7, "humid": 97.7, "wind": 5.7}, "5": {"temp": 67.5, "humid": 97.7, "wind": 5.7}, "6": {"temp": 67.8, "humid": 97.4, "wind": 5.7}, "7": {"temp": 69.4, "humid": 93.4, "wind": 6.4}, "8": {"temp": 71.7, "humid": 86.4, "wind": 6.8}, "9": {"temp": 74.0, "humid": 79.9, "wind": 7.1}, "10": {"temp": 75.9, "humid": 74.9, "wind": 7.2}, "11": {"temp": 77.3, "humid": 71.6, "wind": 7.3}, "12": {"temp": 78.0, "humid": 69.8, "wind": 7.3}, "13": {"temp": 78.1, "humid": 69.4, "wind": 7.3}, "14": {"temp": 77.7, "humid": 70.0, "wind": 7.3}, "15": {"temp": 77.0, "humid": 71.8, "wind": 7.4}, "16": {"temp": 75.7, "humid": 75.2, "wind": 7.2}, "17": {"temp": 73.8, "humid": 81.0, "wind": 6.7}, "18": {"temp": 71.6, "humid": 88.0, "wind": 5.8}, "19": {"temp": 70.0, "humid": 93.3, "wind": 5.7}, "20": {"temp": 69.2, "humid": 95.3, "wind": 6.0}, "21": {"temp": 68.8, "humid": 96.2, "wind": 6.2}, "22": {"temp": 68.6, "humid": 96.6, "wind": 6.4}, "23": {"temp": 68.4, "humid": 96.9, "wind": 6.4}};
+const driverData = {"humidity": 116, "wind": 62184, "temperature": 6836};
+const greenBins = {"1-2h": 1744, "3-4h": 626, "5-8h": 654, "9-12h": 329, "13-18h": 380, "19-24h": 167, "25+h": 57};
+const windowData = {"1": 35.6, "2": 25.5, "3": 20, "4": 21.3, "5": 21.5, "6": 29.1, "7": 19, "8": 21.9, "9": 29.6, "10": 45.3, "11": 47.8, "12": 32};
+const yearlyData = {"2015": {"0": 43.1, "1": 53.5, "2": 3.4}, "2016": {"0": 51.2, "1": 47.4, "2": 1.4}, "2017": {"0": 23.7, "1": 67.7, "2": 8.6}, "2018": {"0": 15.7, "1": 72.3, "2": 12.0}, "2019": {"0": 21.8, "1": 66.3, "2": 11.9}, "2020": {"0": 21.1, "1": 64.4, "2": 14.5}, "2021": {"0": 20.7, "1": 67.6, "2": 11.7}, "2022": {"0": 21.7, "1": 69.9, "2": 8.4}, "2023": {"0": 23.7, "1": 67.0, "2": 9.3}, "2024": {"0": 25.5, "1": 63.9, "2": 10.6}};
+
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 13;
+Chart.defaults.color = '#666';
+
+// Helper: stacked options
+function stackedOpts(title) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'
+                }
+            }
+        },
+        scales: {
+            x: { grid: { display: false } },
+            y: { stacked: true, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f0f0f0' } }
+        }
+    };
+}
+
+// Monthly Seasonality Chart
+new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+        labels: MONTHS,
+        datasets: [
+            { label: 'Safe', data: MONTHS.map((_,i) => monthlyData[String(i+1)]['0']), backgroundColor: GREEN },
+            { label: 'Caution', data: MONTHS.map((_,i) => monthlyData[String(i+1)]['1']), backgroundColor: YELLOW },
+            { label: 'Danger', data: MONTHS.map((_,i) => monthlyData[String(i+1)]['2']), backgroundColor: RED },
+        ]
+    },
+    options: { ...stackedOpts(), scales: { ...stackedOpts().scales, x: { stacked: true, grid: { display: false } } } }
+});
+
+// Hourly Patterns Chart
+new Chart(document.getElementById('hourlyChart'), {
+    type: 'line',
+    data: {
+        labels: Array.from({length:24}, (_,i) => i + ':00'),
+        datasets: [
+            { label: 'Safe', data: Array.from({length:24}, (_,i) => hourlyData[String(i)]['0']), backgroundColor: GREEN+'40', borderColor: GREEN, fill: true, tension: 0.3 },
+            { label: 'Caution', data: Array.from({length:24}, (_,i) => hourlyData[String(i)]['1']), backgroundColor: YELLOW+'40', borderColor: YELLOW, fill: true, tension: 0.3 },
+            { label: 'Danger', data: Array.from({length:24}, (_,i) => hourlyData[String(i)]['2']), backgroundColor: RED+'40', borderColor: RED, fill: true, tension: 0.3 },
+        ]
+    },
+    options: stackedOpts()
+});
+
+// Daily Profile Chart
+new Chart(document.getElementById('profileChart'), {
+    type: 'line',
+    data: {
+        labels: Array.from({length:24}, (_,i) => i + ':00'),
+        datasets: [
+            { label: 'Humidity (%)', data: Array.from({length:24}, (_,i) => profileData[String(i)].humid), borderColor: '#3498db', backgroundColor: '#3498db20', borderWidth: 2.5, tension: 0.3, yAxisID: 'y' },
+            { label: 'Temperature (°F)', data: Array.from({length:24}, (_,i) => profileData[String(i)].temp), borderColor: '#e74c3c', backgroundColor: '#e74c3c20', borderWidth: 2.5, tension: 0.3, yAxisID: 'y' },
+            { label: 'Wind (mph)', data: Array.from({length:24}, (_,i) => profileData[String(i)].wind), borderColor: '#9b59b6', backgroundColor: '#9b59b620', borderWidth: 2.5, tension: 0.3, yAxisID: 'y2' },
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+            annotation: undefined
+        },
+        scales: {
+            x: { grid: { display: false } },
+            y: { position: 'left', title: { display: true, text: 'Humidity (%) / Temp (°F)' }, grid: { color: '#f0f0f0' } },
+            y2: { position: 'right', title: { display: true, text: 'Wind (mph)' }, grid: { display: false }, min: 0 }
+        }
+    }
+});
+
+// Driver Donut
+new Chart(document.getElementById('driverChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Humidity', 'Wind', 'Temperature'],
+        datasets: [{
+            data: [driverData.humidity, driverData.wind, driverData.temperature],
+            backgroundColor: ['#3498db', '#9b59b6', '#e74c3c'],
+            borderWidth: 0,
+            hoverOffset: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } },
+            tooltip: {
+                callbacks: {
+                    label: ctx => {
+                        const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                        return ctx.label + ': ' + ctx.raw.toLocaleString() + ' (' + (ctx.raw/total*100).toFixed(1) + '%)';
+                    }
+                }
+            }
+        },
+        cutout: '55%',
+    }
+});
+
+// Green Duration Histogram
+new Chart(document.getElementById('durationChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(greenBins),
+        datasets: [{
+            label: 'Safe windows',
+            data: Object.values(greenBins),
+            backgroundColor: GREEN,
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { display: false } },
+            y: { title: { display: true, text: 'Count' }, grid: { color: '#f0f0f0' } }
+        }
+    }
+});
+
+// Best Windows by Month
+new Chart(document.getElementById('windowChart'), {
+    type: 'bar',
+    data: {
+        labels: MONTHS,
+        datasets: [{
+            label: 'Avg longest safe window (hours)',
+            data: MONTHS.map((_,i) => windowData[String(i+1)]),
+            backgroundColor: GREEN,
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { display: false } },
+            y: { title: { display: true, text: 'Hours' }, grid: { color: '#f0f0f0' } }
+        }
+    }
+});
+
+// Year Trends
+const years = Object.keys(yearlyData).sort();
+new Chart(document.getElementById('yearlyChart'), {
+    type: 'line',
+    data: {
+        labels: years,
+        datasets: [
+            { label: 'Safe %', data: years.map(y => yearlyData[y]['0']), borderColor: GREEN, backgroundColor: GREEN+'20', fill: true, tension: 0.3, borderWidth: 2.5 },
+            { label: 'Caution %', data: years.map(y => yearlyData[y]['1']), borderColor: YELLOW, backgroundColor: YELLOW+'20', fill: true, tension: 0.3, borderWidth: 2.5 },
+            { label: 'Danger %', data: years.map(y => yearlyData[y]['2']), borderColor: RED, backgroundColor: RED+'20', fill: true, tension: 0.3, borderWidth: 2.5 },
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } }
+        },
+        scales: {
+            x: { grid: { display: false } },
+            y: { max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f0f0f0' } }
+        }
+    }
+});
+</script>
+
+</body>
+</html>
