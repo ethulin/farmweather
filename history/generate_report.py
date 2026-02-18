@@ -353,13 +353,13 @@ def generate_html(analysis):
 body {{
     font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #fff;
-    color: #333;
+    color: #1a1a1a;
     line-height: 1.75;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
 }}
 
-a {{ color: #0067B1; }}
+a {{ color: #005BBB; }}
 
 /* ── Page wrapper ── */
 .page {{
@@ -392,7 +392,7 @@ a {{ color: #0067B1; }}
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 3rem;
     font-weight: 900;
-    color: #0067B1;
+    color: #005BBB;
     line-height: 1.1;
     margin-bottom: 16px;
     max-width: 70%;
@@ -400,7 +400,7 @@ a {{ color: #0067B1; }}
 .cover .lead {{
     font-size: 1.2rem;
     font-weight: 300;
-    color: #555;
+    color: #5e6a71;
     line-height: 1.6;
     max-width: 65%;
     margin-bottom: 28px;
@@ -413,7 +413,15 @@ a {{ color: #0067B1; }}
 .cover .meta {{
     margin-top: 20px;
     font-size: 0.82rem;
-    color: #aaa;
+    color: #5e6a71;
+}}
+.cover-series {{
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: #D4982A;
+    margin-bottom: 14px;
 }}
 
 /* ── Section headings (Rare interior style: ALL-CAPS sans-serif) ── */
@@ -422,9 +430,9 @@ a {{ color: #0067B1; }}
 }}
 .sec-head {{
     font-family: 'Source Sans 3', sans-serif;
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 900;
-    color: #222;
+    color: #1a1a1a;
     margin-bottom: 12px;
     line-height: 1.2;
 }}
@@ -435,11 +443,11 @@ a {{ color: #0067B1; }}
     margin-bottom: 28px;
 }}
 .sec p {{
-    color: #444;
+    color: #4a4a4a;
     margin-bottom: 20px;
     max-width: 720px;
 }}
-.sec p strong {{ color: #222; }}
+.sec p strong {{ color: #1a1a1a; }}
 
 /* ── Figures (charts) ── */
 figure {{
@@ -447,7 +455,7 @@ figure {{
 }}
 figure figcaption {{
     font-size: 0.82rem;
-    color: #999;
+    color: #8a9299;
     margin-top: 8px;
     font-style: italic;
 }}
@@ -471,11 +479,11 @@ figure figcaption {{
     flex: 1;
 }}
 .stat-num {{
-    font-family: 'Playfair Display', serif;
+    font-family: 'Source Sans 3', sans-serif;
     font-size: 3.4rem;
     font-weight: 900;
     line-height: 1;
-    color: #222;
+    color: #1a1a1a;
     display: flex;
     align-items: baseline;
     gap: 12px;
@@ -493,12 +501,12 @@ figure figcaption {{
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #888;
+    color: #5e6a71;
     margin-top: 8px;
 }}
 .stat-sub {{
     font-size: 0.85rem;
-    color: #aaa;
+    color: #8a9299;
     margin-top: 2px;
 }}
 
@@ -509,10 +517,10 @@ figure figcaption {{
     margin: 36px 0;
     font-size: 1.05rem;
     line-height: 1.7;
-    color: #444;
+    color: #4a4a4a;
 }}
 .pull-quote strong {{
-    color: #222;
+    color: #1a1a1a;
 }}
 .pull-quote .pq-label {{
     display: block;
@@ -538,7 +546,7 @@ figure figcaption {{
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #666;
+    color: #5e6a71;
     margin-bottom: 16px;
 }}
 
@@ -552,17 +560,17 @@ figure figcaption {{
 .data-table thead th {{
     text-align: left;
     padding: 10px 12px;
-    border-bottom: 2px solid #0067B1;
+    border-bottom: 2px solid #ddd;
     font-weight: 700;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #0067B1;
+    color: #1a1a1a;
 }}
 .data-table td {{
     padding: 9px 12px;
     border-bottom: 1px solid #eee;
-    color: #444;
+    color: #4a4a4a;
 }}
 .data-table tbody tr:last-child td {{ border-bottom: none; }}
 
@@ -599,14 +607,14 @@ figure figcaption {{
     align-items: center;
     font-weight: 600;
     font-size: 0.78rem;
-    color: #666;
+    color: #5e6a71;
     padding-right: 6px;
     justify-content: flex-end;
 }}
 .hm-hour {{
     text-align: center;
     font-weight: 600;
-    color: #aaa;
+    color: #8a9299;
     font-size: 0.65rem;
     padding-bottom: 4px;
 }}
@@ -622,13 +630,13 @@ figure figcaption {{
 }}
 .footer-text {{
     font-size: 0.78rem;
-    color: #bbb;
+    color: #8a9299;
     line-height: 1.8;
 }}
 .footer-logo img {{
     height: 36px;
     width: auto;
-    opacity: 0.5;
+    opacity: 1;
 }}
 
 /* ── Responsive ── */
@@ -655,6 +663,7 @@ figure figcaption {{
 <!-- Cover -->
 <div class="cover">
     <div class="cover-logo"><img src="rare-logo.png" alt="Rare — Center for Behavior &amp; the Environment"></div>
+    <div class="cover-series">Research Report</div>
     <h1>Historical Burn<br>Conditions Report</h1>
     <p class="lead">Making the Case for Informed Burning Practices in the Belize Maya Forest Region</p>
     <div class="accent"></div>
@@ -827,9 +836,9 @@ const MONTHS = {json.dumps(MONTH_NAMES)};
 const GREEN = '{COLORS["green"]}';
 const YELLOW = '{COLORS["yellow"]}';
 const RED = '{COLORS["red"]}';
-const BLUE = '#0067B1';
-const GOLD = '#D4982A';
-const TEAL = '#009966';
+const BLUE = '#005BBB';
+const GOLD = '#F58233';
+const TEAL = '#008542';
 
 const monthlyData = {json.dumps({str(m): monthly[m] for m in range(1,13)})};
 const hourlyData = {json.dumps({str(h): hourly[h] for h in range(24)})};
@@ -841,7 +850,7 @@ const yearlyData = {json.dumps(yearly)};
 
 Chart.defaults.font.family = "'Source Sans 3', sans-serif";
 Chart.defaults.font.size = 12;
-Chart.defaults.color = '#999';
+Chart.defaults.color = '#8a9299';
 
 function stackedOpts() {{
     return {{

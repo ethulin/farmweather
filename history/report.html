@@ -13,13 +13,13 @@
 body {
     font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #fff;
-    color: #333;
+    color: #1a1a1a;
     line-height: 1.75;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
 }
 
-a { color: #0067B1; }
+a { color: #005BBB; }
 
 /* ── Page wrapper ── */
 .page {
@@ -52,7 +52,7 @@ a { color: #0067B1; }
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 3rem;
     font-weight: 900;
-    color: #0067B1;
+    color: #005BBB;
     line-height: 1.1;
     margin-bottom: 16px;
     max-width: 70%;
@@ -60,7 +60,7 @@ a { color: #0067B1; }
 .cover .lead {
     font-size: 1.2rem;
     font-weight: 300;
-    color: #555;
+    color: #5e6a71;
     line-height: 1.6;
     max-width: 65%;
     margin-bottom: 28px;
@@ -73,7 +73,15 @@ a { color: #0067B1; }
 .cover .meta {
     margin-top: 20px;
     font-size: 0.82rem;
-    color: #aaa;
+    color: #5e6a71;
+}
+.cover-series {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: #D4982A;
+    margin-bottom: 14px;
 }
 
 /* ── Section headings (Rare interior style: ALL-CAPS sans-serif) ── */
@@ -82,9 +90,9 @@ a { color: #0067B1; }
 }
 .sec-head {
     font-family: 'Source Sans 3', sans-serif;
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 900;
-    color: #222;
+    color: #1a1a1a;
     margin-bottom: 12px;
     line-height: 1.2;
 }
@@ -95,11 +103,11 @@ a { color: #0067B1; }
     margin-bottom: 28px;
 }
 .sec p {
-    color: #444;
+    color: #4a4a4a;
     margin-bottom: 20px;
     max-width: 720px;
 }
-.sec p strong { color: #222; }
+.sec p strong { color: #1a1a1a; }
 
 /* ── Figures (charts) ── */
 figure {
@@ -107,7 +115,7 @@ figure {
 }
 figure figcaption {
     font-size: 0.82rem;
-    color: #999;
+    color: #8a9299;
     margin-top: 8px;
     font-style: italic;
 }
@@ -131,11 +139,11 @@ figure figcaption {
     flex: 1;
 }
 .stat-num {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Source Sans 3', sans-serif;
     font-size: 3.4rem;
     font-weight: 900;
     line-height: 1;
-    color: #222;
+    color: #1a1a1a;
     display: flex;
     align-items: baseline;
     gap: 12px;
@@ -153,12 +161,12 @@ figure figcaption {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #888;
+    color: #5e6a71;
     margin-top: 8px;
 }
 .stat-sub {
     font-size: 0.85rem;
-    color: #aaa;
+    color: #8a9299;
     margin-top: 2px;
 }
 
@@ -169,10 +177,10 @@ figure figcaption {
     margin: 36px 0;
     font-size: 1.05rem;
     line-height: 1.7;
-    color: #444;
+    color: #4a4a4a;
 }
 .pull-quote strong {
-    color: #222;
+    color: #1a1a1a;
 }
 .pull-quote .pq-label {
     display: block;
@@ -198,7 +206,7 @@ figure figcaption {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: #666;
+    color: #5e6a71;
     margin-bottom: 16px;
 }
 
@@ -212,17 +220,17 @@ figure figcaption {
 .data-table thead th {
     text-align: left;
     padding: 10px 12px;
-    border-bottom: 2px solid #0067B1;
+    border-bottom: 2px solid #ddd;
     font-weight: 700;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #0067B1;
+    color: #1a1a1a;
 }
 .data-table td {
     padding: 9px 12px;
     border-bottom: 1px solid #eee;
-    color: #444;
+    color: #4a4a4a;
 }
 .data-table tbody tr:last-child td { border-bottom: none; }
 
@@ -259,14 +267,14 @@ figure figcaption {
     align-items: center;
     font-weight: 600;
     font-size: 0.78rem;
-    color: #666;
+    color: #5e6a71;
     padding-right: 6px;
     justify-content: flex-end;
 }
 .hm-hour {
     text-align: center;
     font-weight: 600;
-    color: #aaa;
+    color: #8a9299;
     font-size: 0.65rem;
     padding-bottom: 4px;
 }
@@ -282,13 +290,13 @@ figure figcaption {
 }
 .footer-text {
     font-size: 0.78rem;
-    color: #bbb;
+    color: #8a9299;
     line-height: 1.8;
 }
 .footer-logo img {
     height: 36px;
     width: auto;
-    opacity: 0.5;
+    opacity: 1;
 }
 
 /* ── Responsive ── */
@@ -315,6 +323,7 @@ figure figcaption {
 <!-- Cover -->
 <div class="cover">
     <div class="cover-logo"><img src="rare-logo.png" alt="Rare — Center for Behavior &amp; the Environment"></div>
+    <div class="cover-series">Research Report</div>
     <h1>Historical Burn<br>Conditions Report</h1>
     <p class="lead">Making the Case for Informed Burning Practices in the Belize Maya Forest Region</p>
     <div class="accent"></div>
@@ -500,7 +509,7 @@ figure figcaption {
 <div class="report-footer">
     <div class="footer-text">
         Data: Open-Meteo Archive API (ERA5 Reanalysis)<br>
-        Generated February 18, 2026 at 09:57 AM
+        Generated February 18, 2026 at 10:44 AM
     </div>
     <div class="footer-logo"><img src="rare-logo.png" alt="Rare"></div>
 </div>
@@ -512,9 +521,9 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const GREEN = '#22b740';
 const YELLOW = '#e6a800';
 const RED = '#d93030';
-const BLUE = '#0067B1';
-const GOLD = '#D4982A';
-const TEAL = '#009966';
+const BLUE = '#005BBB';
+const GOLD = '#F58233';
+const TEAL = '#008542';
 
 const monthlyData = {"1": {"0": 31.9, "1": 58.1, "2": 10.0}, "2": {"0": 21.1, "1": 63.7, "2": 15.2}, "3": {"0": 15.9, "1": 71.4, "2": 12.7}, "4": {"0": 15.2, "1": 73.5, "2": 11.2}, "5": {"0": 17.2, "1": 73.5, "2": 9.3}, "6": {"0": 23.5, "1": 64.8, "2": 11.8}, "7": {"0": 11.9, "1": 72.7, "2": 15.4}, "8": {"0": 25.9, "1": 66.9, "2": 7.2}, "9": {"0": 40.3, "1": 57.8, "2": 1.8}, "10": {"0": 45.4, "1": 49.5, "2": 5.0}, "11": {"0": 41.4, "1": 53.7, "2": 4.9}, "12": {"0": 32.0, "1": 62.1, "2": 5.9}};
 const hourlyData = {"0": {"0": 32.0, "1": 61.2, "2": 6.8}, "1": {"0": 34.1, "1": 59.6, "2": 6.3}, "2": {"0": 36.5, "1": 57.4, "2": 6.1}, "3": {"0": 39.0, "1": 55.1, "2": 5.9}, "4": {"0": 40.9, "1": 53.7, "2": 5.4}, "5": {"0": 42.5, "1": 51.9, "2": 5.6}, "6": {"0": 40.8, "1": 53.9, "2": 5.2}, "7": {"0": 33.7, "1": 55.5, "2": 10.8}, "8": {"0": 28.6, "1": 56.4, "2": 15.0}, "9": {"0": 22.2, "1": 61.8, "2": 16.0}, "10": {"0": 14.7, "1": 69.9, "2": 15.4}, "11": {"0": 9.7, "1": 75.0, "2": 15.4}, "12": {"0": 9.4, "1": 74.8, "2": 15.8}, "13": {"0": 10.1, "1": 75.1, "2": 14.8}, "14": {"0": 11.2, "1": 73.8, "2": 15.0}, "15": {"0": 12.3, "1": 73.4, "2": 14.3}, "16": {"0": 15.3, "1": 73.0, "2": 11.8}, "17": {"0": 21.7, "1": 71.3, "2": 7.1}, "18": {"0": 32.3, "1": 65.4, "2": 2.3}, "19": {"0": 33.3, "1": 64.7, "2": 2.0}, "20": {"0": 32.0, "1": 64.5, "2": 3.5}, "21": {"0": 30.3, "1": 64.1, "2": 5.6}, "22": {"0": 29.8, "1": 62.9, "2": 7.3}, "23": {"0": 31.0, "1": 61.6, "2": 7.4}};
@@ -526,7 +535,7 @@ const yearlyData = {"2015": {"0": 43.1, "1": 53.5, "2": 3.4}, "2016": {"0": 51.2
 
 Chart.defaults.font.family = "'Source Sans 3', sans-serif";
 Chart.defaults.font.size = 12;
-Chart.defaults.color = '#999';
+Chart.defaults.color = '#8a9299';
 
 function stackedOpts() {
     return {
